@@ -50,7 +50,8 @@ namespace SimpleTPA
         {
             #region tpa request
             List<UnturnedPlayer> tpaPlayersToRemove = new();
-            Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayersNew = tpaPlayers;
+            Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayersNew = new(tpaPlayers); // Create a copy to update
+
             // Swipe all pending tpa
             foreach (KeyValuePair<UnturnedPlayer, Dictionary<string, object>> playerData in tpaPlayers)
             {
@@ -59,7 +60,7 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus reqStatus && reqStatus == ETPAStatus.Requesting)
                 {
                     // Get default value
-                    Dictionary<string, object> updatedData = playerData.Value;
+                    Dictionary<string, object> updatedData = new(playerData.Value);
                     // Reduce expiration data
                     updatedData["Time"] = (uint)updatedData["Time"] - 1;
 
@@ -79,7 +80,7 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus acStatus && acStatus == ETPAStatus.Accepted)
                 {
                     // Get default value
-                    Dictionary<string, object> updatedData = playerData.Value;
+                    Dictionary<string, object> updatedData = new(playerData.Value);
                     // Reduce delay data
                     updatedData["Time"] = (uint)updatedData["Time"] - 1;
 
@@ -98,8 +99,10 @@ namespace SimpleTPA
                 }
                 #endregion
             }
-            // Remove finished requests
+
+            // Remove finished requests outside the iteration
             foreach (UnturnedPlayer player in tpaPlayersToRemove) tpaPlayersNew.Remove(player);
+
             // Finally we update the real tpaPlayers requests
             tpaPlayers = tpaPlayersNew;
             #endregion
