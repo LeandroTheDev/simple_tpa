@@ -23,6 +23,7 @@ namespace SimpleTPA
         public override TranslationList DefaultTranslations => new()
         {
             {"Invalid_Player", "Cannot use this command because you are invalid"},
+            {"Request_Self", "Cannot Tpa to yourself"},
             {"Invalid_Arguments", "Invalid Arguments"},
             {"Request_Aborted_By_Other", "Your Tpa request has been aborted because other player has requested"},
             {"Already_Requested", "You already have a Tpa request"},
@@ -42,12 +43,14 @@ namespace SimpleTPA
 
     public class SimpleTPASystem : MonoBehaviour
     {
-        private readonly Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayers = new();
+        private Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayers = new();
 
         public void Update()
         {
-            // Swipe all pending tpa
+            #region tpa request
             List<UnturnedPlayer> tpaPlayersToRemove = new();
+            Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayersNew = tpaPlayers;
+            // Swipe all pending tpa
             foreach (KeyValuePair<UnturnedPlayer, Dictionary<string, object>> playerData in tpaPlayers)
             {
                 #region requisting expiration
@@ -67,7 +70,7 @@ namespace SimpleTPA
                     }
 
                     // Update data
-                    tpaPlayers[playerData.Key] = updatedData;
+                    tpaPlayersNew[playerData.Key] = updatedData;
                 }
                 #endregion
                 #region accepted delay
@@ -90,38 +93,52 @@ namespace SimpleTPA
                     }
 
                     // Update data
-                    tpaPlayers[playerData.Key] = updatedData;
+                    tpaPlayersNew[playerData.Key] = updatedData;
                 }
                 #endregion
             }
             // Remove finished requests
-            foreach (UnturnedPlayer player in tpaPlayersToRemove) tpaPlayers.Remove(player);
+            foreach (UnturnedPlayer player in tpaPlayersToRemove) tpaPlayersNew.Remove(player);
+            // Finally we update the real tpaPlayers requests
+            tpaPlayers = tpaPlayersNew;
+            #endregion
         }
 
         public void TpaRequest(UnturnedPlayer playerGoing, UnturnedPlayer playerReceiving)
         {
+            // Check if player is requesting to self
+            if (playerGoing == playerReceiving)
+            {
+                // Inform him
+                UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance!.Translate("Request_Self"), Palette.COLOR_Y);
+                return;
+            }
             // Check if player already requested
             if (tpaPlayers.TryGetValue(playerGoing, out _))
             {
+                // Inform him
                 UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance!.Translate("Already_Requested"), Palette.COLOR_Y);
                 return;
             }
-            // Check other requests for this player
+
+            // Check other requests for this player, if exist we need to remove it
             foreach (KeyValuePair<UnturnedPlayer, Dictionary<string, object>> playerData in tpaPlayers)
             {
                 // Check the status requesting
                 if (playerData.Value["Status"] is ETPAStatus status && status == ETPAStatus.Requesting)
                 {
+                    // Check if the receiver is the same as the player command
                     if (playerData.Value["To"] is UnturnedPlayer player && player == playerReceiving)
                     {
                         // Remove the old request
                         tpaPlayers.Remove(playerData.Key);
                         // Inform the player about their request cancelled
-                        UnturnedChat.Say(playerData.Key, SimpleTPAPlugin.instance!.Translate(""), Palette.COLOR_Y);
+                        UnturnedChat.Say(playerData.Key, SimpleTPAPlugin.instance!.Translate("Request_Aborted_By_Other"), Palette.COLOR_Y);
                         break;
                     }
                 }
             }
+
             // Add pending request
             tpaPlayers.Add(playerGoing, new()
             {
@@ -129,6 +146,7 @@ namespace SimpleTPA
                 {"Time", SimpleTPAPlugin.instance!.Configuration.Instance.TickrateToExpire },
                 {"Status", ETPAStatus.Requesting},
             });
+
             // Inform the receiving player
             UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance.Translate("Request_Received", playerGoing.DisplayName), Palette.COLOR_Y);
         }
