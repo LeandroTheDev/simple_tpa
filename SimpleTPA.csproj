@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net4.8</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>10</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>..\SkinRestriction-master\Libs\Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="com.rlabrecque.steamworks.net">
+			<HintPath>..\SkinRestriction-master\Libs\com.rlabrecque.steamworks.net.dll</HintPath>
+		</Reference>
+		<Reference Include="Rocket.API">
+			<HintPath>..\SkinRestriction-master\Libs\Rocket.API.dll</HintPath>
+		</Reference>
+		<Reference Include="Rocket.Core">
+			<HintPath>..\SkinRestriction-master\Libs\Rocket.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="Rocket.Unturned">
+			<HintPath>..\SkinRestriction-master\Libs\Rocket.Unturned.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>..\SkinRestriction-master\Libs\UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>Libs\UnityEngine.CoreModule.dll</HintPath>
+			<Aliases>UnityEngineCoreModule</Aliases>
+		</Reference>
+	</ItemGroup>
+
+</Project>
+
