@@ -50,7 +50,7 @@ namespace SimpleTPA
         {
             #region tpa request
             List<UnturnedPlayer> tpaPlayersToRemove = new();
-            Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayersNew = new(tpaPlayers); // Create a copy to update
+            Dictionary<UnturnedPlayer, Dictionary<string, object>> tpaPlayersNew = new(tpaPlayers);
 
             // Swipe all pending tpa
             foreach (KeyValuePair<UnturnedPlayer, Dictionary<string, object>> playerData in tpaPlayers)
