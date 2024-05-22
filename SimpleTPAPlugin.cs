@@ -111,7 +111,7 @@ namespace SimpleTPA
         public void TpaRequest(UnturnedPlayer playerGoing, UnturnedPlayer playerReceiving)
         {
             // Check if player is requesting to self
-            if (playerGoing == playerReceiving)
+            if (playerGoing.CharacterName == playerReceiving.CharacterName)
             {
                 // Inform him
                 UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance!.Translate("Request_Self"), Palette.COLOR_Y);
@@ -132,7 +132,7 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus status && status == ETPAStatus.Requesting)
                 {
                     // Check if the receiver is the same as the player command
-                    if (playerData.Value["To"] is UnturnedPlayer player && player == playerReceiving)
+                    if (playerData.Value["To"] is UnturnedPlayer player && player.Id == playerReceiving.Id)
                     {
                         // Remove the old request
                         tpaPlayers.Remove(playerData.Key);
@@ -152,10 +152,10 @@ namespace SimpleTPA
             });
 
             // Inform the going player
-            UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance.Translate("Request_Send", playerGoing.DisplayName), Palette.COLOR_Y);
+            UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance.Translate("Request_Send", playerGoing.CharacterName), Palette.COLOR_Y);
 
             // Inform the receiving player
-            UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance.Translate("Request_Received", playerGoing.DisplayName), Palette.COLOR_Y);
+            UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance.Translate("Request_Received", playerGoing.CharacterName), Palette.COLOR_Y);
         }
         public void TpaAccept(UnturnedPlayer playerReceiving)
         {
@@ -166,7 +166,7 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus status && status == ETPAStatus.Requesting)
                 {
                     // Check if player receiving is you
-                    if (playerData.Value["To"] is UnturnedPlayer player && player == playerReceiving)
+                    if (playerData.Value["To"] is UnturnedPlayer player && player.Id == playerReceiving.Id)
                     {
                         // Get default value
                         Dictionary<string, object> updatedData = playerData.Value;
@@ -199,10 +199,10 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus status && status == ETPAStatus.Requesting)
                 {
                     // Check if player receiving is you
-                    if (playerData.Value["To"] is UnturnedPlayer player && player == playerReceiving)
+                    if (playerData.Value["To"] is UnturnedPlayer player && player.Id == playerReceiving.Id)
                     {
                         // Inform the receiving player
-                        UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance!.Translate("Denied_Tpa", playerData.Key.DisplayName), Palette.COLOR_Y);
+                        UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance!.Translate("Denied_Tpa", playerData.Key.CharacterName), Palette.COLOR_Y);
 
                         // Inform the going player
                         UnturnedChat.Say(playerData.Key, SimpleTPAPlugin.instance!.Translate("Tpa_Denied"), Palette.COLOR_R);
@@ -224,7 +224,7 @@ namespace SimpleTPA
                 if (playerData.Value["Status"] is ETPAStatus status && status == ETPAStatus.Accepted)
                 {
                     // Check if player receiving is you
-                    if (playerData.Value["To"] is UnturnedPlayer player && player == playerCalled)
+                    if (playerData.Value["To"] is UnturnedPlayer player && player.Id == playerCalled.Id)
                     {
                         // Inform the receiving player
                         UnturnedChat.Say(playerCalled, SimpleTPAPlugin.instance!.Translate("Tpa_Aborted"), Palette.COLOR_R);
@@ -238,7 +238,7 @@ namespace SimpleTPA
                     }
                 }
                 // Check if the player going is you
-                if (playerData.Key == playerCalled)
+                if (playerData.Key.Id == playerCalled.Id)
                 {
                     // Check if receiving player is valid
                     if (playerData.Value["To"] is UnturnedPlayer playerReceiving)
@@ -258,7 +258,6 @@ namespace SimpleTPA
             // If the function goes here is because theres no request for this player, lets inform him
             UnturnedChat.Say(playerCalled, SimpleTPAPlugin.instance!.Translate("No_Request_To_Abort"), Palette.COLOR_Y);
         }
-
         public void PositionUpdated(UnturnedPlayer player, UnityCoreModule.Vector3 _)
         {
             // Check if player has a tpa request
@@ -274,6 +273,9 @@ namespace SimpleTPA
                     return;
                 }
             }
+        }
+        public void PlayerInCombat(string playerId) {
+            
         }
     }
 
