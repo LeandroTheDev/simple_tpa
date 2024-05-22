@@ -28,6 +28,7 @@ namespace SimpleTPA
             {"Request_Aborted_By_Other", "Your Tpa request has been aborted because other player has requested"},
             {"Already_Requested", "You already have a Tpa request"},
             {"Pending_Request_Expired", "Tpa request has been expired"},
+            {"Request_Send", "Tpa to {0} has been send"},
             {"Request_Received", "Tpa from {0}, accept using /tpa a"},
             {"Request_Accepted", "Tpa accepted don't move for {0} seconds"},
             {"Accepted_Request", "Tpa accepted"},
@@ -146,6 +147,9 @@ namespace SimpleTPA
                 {"Time", SimpleTPAPlugin.instance!.Configuration.Instance.TickrateToExpire },
                 {"Status", ETPAStatus.Requesting},
             });
+
+            // Inform the going player
+            UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance.Translate("Request_Send", playerGoing.DisplayName), Palette.COLOR_Y);
 
             // Inform the receiving player
             UnturnedChat.Say(playerReceiving, SimpleTPAPlugin.instance.Translate("Request_Received", playerGoing.DisplayName), Palette.COLOR_Y);
