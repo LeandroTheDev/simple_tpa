@@ -1,4 +1,6 @@
 ﻿extern alias UnityEngineCoreModule;
+
+using AntiCombatLogout;
 using Rocket.API.Collections;
 using Rocket.Core.Plugins;
 using Rocket.Unturned.Chat;
@@ -36,9 +38,13 @@ namespace SimpleTPA
             {"No_Request_To_Deny", "No Tpa request to deny"},
             {"No_Request_To_Abort", "No Tpa request to abort"},
             {"Tpa_Aborted_Moving", "Tpa aborted because you moved"},
+            {"Tpa_Combat_Aborted", "Tpa aborted because you are in combat"},
+            {"Tpa_Aborted_Combat", "Tpa aborted because {0} is in combat"},
             {"Tpa_Denied", "Tpa request has been denied"},
             {"Denied_Tpa", "You denied the Tpa from {0}"},
             {"Tpa_Aborted", "Tpa request has been aborted"},
+            {"Request_In_Combat", "Cannot Tpa while you are in combat"},
+            {"Request_To_Combat", "Cannot Tpa while {0} are in combat"},
         };
     }
 
@@ -55,6 +61,31 @@ namespace SimpleTPA
             // Swipe all pending tpa
             foreach (KeyValuePair<UnturnedPlayer, Dictionary<string, object>> playerData in tpaPlayers)
             {
+                #region combat check
+                // Check if player going is under combat
+                if (AntiCombatLogoutTools.CombatPlayersId.TryGetValue(playerData.Key.Id, out bool value) && value)
+                {
+                    // Inform going
+                    UnturnedChat.Say(playerData.Key, SimpleTPAPlugin.instance!.Translate("Tpa_Combat_Aborted"), Palette.COLOR_R);
+                    // Inform receiver
+                    if (playerData.Value["To"] is UnturnedPlayer player)
+                        UnturnedChat.Say(player, SimpleTPAPlugin.instance!.Translate("Tpa_Aborted_Combat", player.CharacterName), Palette.COLOR_R);
+                    // Add it to remove list
+                    tpaPlayersToRemove.Add(playerData.Key);
+                    continue;
+                }
+                // Check if player receiving is under combat
+                else if (playerData.Value["To"] is UnturnedPlayer player && AntiCombatLogoutTools.CombatPlayersId.TryGetValue(player.Id, out bool value1) && value1)
+                {
+                    // Inform going
+                    UnturnedChat.Say(playerData.Key, SimpleTPAPlugin.instance!.Translate("Tpa_Aborted_Combat", player.CharacterName), Palette.COLOR_R);
+                    // Inform receiver
+                    UnturnedChat.Say(player, SimpleTPAPlugin.instance!.Translate("Tpa_Combat_Aborted"), Palette.COLOR_R);
+                    // Add it to remove list
+                    tpaPlayersToRemove.Add(playerData.Key);
+                    continue;
+                }
+                #endregion
                 #region requisting expiration
                 // Check requesting status
                 if (playerData.Value["Status"] is ETPAStatus reqStatus && reqStatus == ETPAStatus.Requesting)
@@ -110,6 +141,21 @@ namespace SimpleTPA
 
         public void TpaRequest(UnturnedPlayer playerGoing, UnturnedPlayer playerReceiving)
         {
+            // Null check
+            if (playerGoing == null || playerReceiving == null) return;
+
+            // Going in combat
+            if (AntiCombatLogoutTools.CombatPlayersId.TryGetValue(playerGoing.Id, out bool value) && value)
+            {
+                UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance!.Translate("Request_In_Combat"), Palette.COLOR_R);
+                return;
+            }
+            // Receiving in combat
+            else if (AntiCombatLogoutTools.CombatPlayersId.TryGetValue(playerReceiving.Id, out bool value1) && value1)
+            {
+                UnturnedChat.Say(playerGoing, SimpleTPAPlugin.instance!.Translate("Request_To_Combat", playerReceiving.CharacterName), Palette.COLOR_R);
+                return;
+            }
             // Check if player is requesting to self
             if (playerGoing.CharacterName == playerReceiving.CharacterName)
             {
@@ -273,9 +319,6 @@ namespace SimpleTPA
                     return;
                 }
             }
-        }
-        public void PlayerInCombat(string playerId) {
-            
         }
     }
 
